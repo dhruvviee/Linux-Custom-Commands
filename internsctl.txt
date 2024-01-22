@@ -1,0 +1,135 @@
+#!/bin/bash
+
+# Function to display the manual page
+show_manual() {
+    man /path/to/internsctl.1
+}
+
+# Function to display usage information and help
+show_help() {
+    echo "Usage: internsctl [options]"
+    echo "Options:"
+    echo "  cpu getinfo        Get CPU information (similar to lscpu)"
+    echo "  memory getinfo     Get memory information (similar to free)"
+    echo "  user create <username>    Create a new user"
+    echo "  user list           List all regular users"
+    echo "  user list --sudo-only     List users with sudo permissions"
+    echo "  file getinfo <file-name>    Get information about a file"
+    echo "  --size, -s          Print the file size"
+    echo "  --permissions, -p   Print file permissions"
+    echo "  --owner, -o         Print file owner"
+    echo "  --last-modified, -m Print last modified time"
+}
+
+# Function to get CPU information
+get_cpu_info() {
+    lscpu
+}
+
+# Function to get memory information
+get_memory_info() {
+    free
+}
+
+# Function to create a new user
+create_user() {
+    username="$1"
+    sudo useradd "$username"
+}
+
+# Function to list users
+list_users() {
+    if [ "$1" == "--sudo-only" ]; then
+        getent passwd | cut -d: -f1,3,4 | awk -F, '$2 == "0" {print $1}'
+    else
+        getent passwd | cut -d: -f1
+    fi
+}
+
+# Function to get file information
+get_file_info() {
+    file="$1"
+    if [ "$2" == "--size" ] || [ "$2" == "-s" ]; then
+        stat -c%s "$file"
+    elif [ "$2" == "--permissions" ] || [ "$2" == "-p" ]; then
+        stat -c%a "$file"
+    elif [ "$2" == "--owner" ] || [ "$2" == "-o" ]; then
+        stat -c%U "$file"
+    elif [ "$2" == "--last-modified" ] || [ "$2" == "-m" ]; then
+        stat -c%y "$file"
+    else
+        stat -c"File: %n Access: %A Size(B): %s Owner: %U Modify: %y" "$file"
+    fi
+}
+
+# Main script logic
+case "$1" in
+    --version)
+        echo "internsctl v0.1.0"
+        ;;
+    --help)
+        show_help
+        ;;
+    cpu)
+        get_cpu_info
+        ;;
+    memory)
+        get_memory_info
+        ;;
+    user)
+        case "$2" in
+            create)
+                create_user "$3"
+                ;;
+            list)
+                list_users "$3"
+                ;;
+        esac
+        ;;
+    file)
+        get_file_info "$2" "$3"
+        ;;
+    *)
+        echo "Invalid command. Use 'internsctl --help' for usage information."
+        ;;
+esac
+
+.\" Man page for internsctl
+.TH INTERNSCTL 1 "18 January 2024" "v0.1.0" "internsctl Manual"
+
+.SH NAME
+internsctl \- custom Linux command for operations
+
+.SH SYNOPSIS
+.B internsctl
+[\fIOPTION\fR]
+
+.SH DESCRIPTION
+This is a custom Linux command that provides various operations for interns.
+
+.SH OPTIONS
+.TP
+.B \-\-help
+Display usage information and help.
+
+.TP
+.B \-\-version
+Display the version of internsctl (v0.1.0).
+
+.SH EXAMPLES
+Display examples of how to use the internsctl command here.
+
+.SH SEE ALSO
+List related documentation or resources.
+
+.SH AUTHOR
+Your name and contact information.
+
+.SH BUGS
+Report bugs to your contact email.
+
+.SH COPYRIGHT
+Copyright \(co 2024 Your Company
+
+.SH NOTES
+Add any additional notes or details here.
